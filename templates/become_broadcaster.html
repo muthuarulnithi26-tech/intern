@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Become Broadcaster{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:50px auto;padding:20px;background:rgba(255,255,255,0.7);border-radius:16px;">
+    <h2>Become a Broadcaster</h2>
+    <form method="POST">
+        <div style="margin-bottom:12px;">
+            <input type="text" name="channel_name" placeholder="Channel Name" required style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">
+        </div>
+        <div style="margin-bottom:12px;">
+            <input type="text" name="contact" placeholder="Email or Phone" required style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">
+        </div>
+        <button type="submit" style="padding:10px 20px;background:linear-gradient(90deg,#1db954,#ff2d55);border:none;color:#000;border-radius:12px;font-weight:700;">Activate Broadcaster</button>
+    </form>
+</div>
+{% endblock %}

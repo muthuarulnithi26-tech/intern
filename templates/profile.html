@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div style="max-width:600px; margin:50px auto; padding:20px; background:rgba(255,255,255,0.7); border-radius:16px;">
+    <h2>My Profile</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email / Phone:</strong> {{ user.email_or_phone }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+
+    {% if profile %}
+        <p><strong>Channel Name:</strong> {{ profile.channel_name }}</p>
+        <p><strong>Contact:</strong> {{ profile.contact_email }}</p>
+        <p><strong>Status:</strong> {{ profile.status }}</p>
+    {% else %}
+        {% if user.role != "broadcaster" %}
+            <a href="/become-broadcaster" style="display:inline-block;margin-top:20px;padding:10px 20px;background:linear-gradient(90deg, #1db954,#ff2d55);color:#000;border-radius:12px;text-decoration:none;font-weight:700;">Become a Broadcaster</a>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+

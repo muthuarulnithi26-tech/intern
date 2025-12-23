@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}All Songs{% endblock %}
+
+{% block content %}
+<div style="max-width:1000px;margin:40px auto;padding:0 20px;">
+
+    <h2 style="margin-bottom:20px;">🎵 All Songs</h2>
+
+    <form method="get" action="/songs" style="margin-bottom:20px;">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search by song or artist"
+            value="{{ request.args.get('q','') }}"
+            style="padding:10px 16px;border-radius:20px;border:none;width:260px;"
+        >
+        <button class="nav-btn">Search</button>
+    </form>
+
+    {% if songs %}
+        {% for song, artist in songs %}
+            <div style="background:rgba(255,255,255,0.6);padding:16px;border-radius:14px;margin-bottom:14px;">
+                <h4>{{ song.title }}</h4>
+                <p style="font-size:13px;color:#444;">Artist: {{ artist.name }}</p>
+
+                <audio controls style="width:100%;margin-top:8px;">
+                    <source src="/{{ song.file_path }}" type="audio/mpeg">
+                    Your browser does not support audio.
+                </audio>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No songs found.</p>
+    {% endif %}
+
+</div>
+{% endblock %}
