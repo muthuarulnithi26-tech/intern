@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Listener</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<header>
+<div class="container">
+<nav>
+<div class="logo">🎧 Listener Mode</div>
+<a href="/logout" class="btn">Logout</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h2>Your Music</h2>
+
+<div class="grid">
+{% for song in songs %}
+<div class="card">
+<h3>{{ song.title }}</h3>
+<p>{{ song.artist_name }}</p>
+<audio controls>
+<source src="/static/{{ song.file_path }}">
+</audio>
+</div>
+{% endfor %}
+</div>
+</div>
+</body>
+</html>

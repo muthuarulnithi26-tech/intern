@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="container">
+<h2>Admin Control Panel</h2>
+
+<div class="card">
+<h3>Users</h3>
+{% for u in users %}
+<p>{{ u.username }}</p>
+{% endfor %}
+</div>
+
+<div class="card" style="margin-top:30px">
+<h3>Songs</h3>
+{% for s in songs %}
+<p>{{ s.title }} - {{ s.artist_name }}</p>
+{% endfor %}
+</div>
+</div>
+</body>
+</html>

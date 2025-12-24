@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Creator Studio</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<header>
+<div class="container">
+<nav>
+<div class="logo">🎼 Creator Studio</div>
+<a href="/logout" class="btn">Logout</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<div class="card">
+<h2>Upload New Song</h2>
+<form method="post" action="/upload-song" enctype="multipart/form-data">
+<input name="title" placeholder="Song title" required>
+<input name="artist_name" placeholder="Artist name" required>
+<input type="file" name="song_file" accept=".mp3" required>
+<button class="btn">Upload</button>
+</form>
+</div>
+
+<div class="grid" style="margin-top:40px">
+{% for song in songs %}
+<div class="card">
+<h3>{{ song.title }}</h3>
+<p>{{ song.artist_name }}</p>
+<audio controls>
+<source src="/static/{{ song.file_path }}">
+</audio>
+
+<a href="/edit-song/{{ song.id }}" class="btn" style="background:#00c9a7">Edit</a>
+<form method="post" action="/delete-song/{{ song.id }}">
+<button class="btn" style="background:#ff4d4d;margin-top:10px">Delete</button>
+</form>
+</div>
+{% endfor %}
+</div>
+</div>
+</body>
+</html>
