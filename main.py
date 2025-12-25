@@ -22,30 +22,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # -------------------------------------------------
 create_tables()
 
-# -------------------------------------------------
-# HOME / LISTENER DASHBOARD
-# -------------------------------------------------
+
 @app.route("/")
 def home():
-    db = SessionLocal()
-    search_query = request.args.get("search")
-
-    if search_query:
-        songs = db.query(Song).filter(
-            (Song.title.ilike(f"%{search_query}%")) |
-            (Song.artist_name.ilike(f"%{search_query}%"))
-        ).all()
-    else:
-        songs = db.query(Song).all()
-
-    db.close()
-    return render_template(
-        "home.html",
-        songs=songs,
-        username=session.get("username"),
-        role=session.get("role"),
-        search_query=search_query
-    )
+    # If user logged in
+    if "username" in session:
+        if session.get("role") == "listener":
+            return redirect(url_for("listener_dashboard"))
+        elif session.get("role") == "creator":
+            return redirect("/creator-dashboard")
+        elif session.get("role") == "admin":
+            return redirect("/admin-dashboard")
+    # For new users
+    return render_template("home.html")
 
 # -------------------------------------------------
 # REGISTER
@@ -83,9 +72,8 @@ def register():
     db.close()
     return render_template("register.html")
 
-# -------------------------------------------------
+
 # LOGIN
-# -------------------------------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     db = SessionLocal()
@@ -93,7 +81,7 @@ def login():
         email_or_phone = request.form.get("email_or_phone")
         password = request.form.get("password")
 
-        # Admin
+        # Admin login
         admin = db.query(Admin).filter_by(username=email_or_phone).first()
         if admin and check_password_hash(admin.password, password):
             session.clear()
@@ -102,7 +90,7 @@ def login():
             db.close()
             return redirect("/admin-dashboard")
 
-        # User
+        # User login
         user = db.query(User).filter_by(email_or_phone=email_or_phone).first()
         if user and check_password_hash(user.password, password):
             session.clear()
@@ -113,7 +101,8 @@ def login():
 
             if user.role == "creator":
                 return redirect("/creator-dashboard")
-            return redirect("/")
+            else:
+                return redirect("/")   # ✅ LISTENER DASHBOARD
 
         flash("Invalid credentials")
 
@@ -299,6 +288,31 @@ def playlists():
         return redirect("/login")
 
     return render_template("playlist.html", playlists=[])
+# -------------------------------------------------
+# LISTENER DASHBOARD
+# -------------------------------------------------
+@app.route("/listener-dashboard")
+def listener_dashboard():
+    if session.get("role") != "listener":
+        return redirect("/login")
+
+    db = SessionLocal()
+    search_query = request.args.get("search")
+    songs = []
+
+    if search_query:
+        songs = db.query(Song).filter(
+            (Song.title.ilike(f"%{search_query}%")) |
+            (Song.artist_name.ilike(f"%{search_query}%"))
+        ).all()
+
+    db.close()
+    return render_template(
+        "listener_dashboard.html",
+        username=session.get("username"),
+        search_query=search_query,
+        songs=songs
+    )
 
 # -------------------------------------------------
 # ADMIN DASHBOARD

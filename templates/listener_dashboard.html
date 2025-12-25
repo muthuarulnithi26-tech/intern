@@ -1,34 +1,233 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Listener</title>
-<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<title>Listener Dashboard | Isai Mini</title>
+
+<style>
+:root{
+    --primary:#1db954;
+    --accent:#ff2d55;
+    --bg1:#87ceeb;
+    --bg2:#b0e0e6;
+    --glass:rgba(255,255,255,.65);
+    --text:#111;
+    --muted:#444;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    min-height:100vh;
+    background:linear-gradient(to bottom,var(--bg1),var(--bg2));
+    color:var(--text);
+}
+
+/* NAVBAR */
+nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 40px;
+    background:rgba(255,255,255,.35);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(0,0,0,.1);
+}
+
+.logo{
+    font-size:26px;
+    font-weight:800;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.nav-right{
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+
+.welcome{
+    font-weight:700;
+}
+
+.nav-btn{
+    padding:8px 18px;
+    border-radius:22px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    color:#000;
+    text-decoration:none;
+}
+
+/* HERO */
+.hero{
+    text-align:center;
+    padding:50px 20px 30px;
+}
+
+.hero h1{
+    font-size:42px;
+    margin-bottom:8px;
+}
+
+.hero p{
+    color:var(--muted);
+    font-size:16px;
+}
+
+/* SEARCH */
+.search-bar{
+    margin-top:24px;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+}
+
+.search-bar input{
+    width:340px;
+    padding:12px 18px;
+    border-radius:30px;
+    border:none;
+    outline:none;
+    font-size:15px;
+    background:rgba(255,255,255,.9);
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.search-bar button{
+    padding:12px 26px;
+    border-radius:30px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+}
+
+/* SONG GRID */
+.section{
+    max-width:1100px;
+    margin:auto;
+    padding:40px 20px 80px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:24px;
+}
+
+.song-card{
+    background:var(--glass);
+    backdrop-filter:blur(12px);
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 15px 35px rgba(0,0,0,.18);
+    transition:.3s;
+}
+
+.song-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 25px 45px rgba(0,0,0,.25);
+}
+
+.cover{
+    height:140px;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:46px;
+    margin-bottom:14px;
+}
+
+.song-card h3{
+    font-size:18px;
+}
+
+.song-card p{
+    font-size:14px;
+    color:var(--muted);
+    margin-bottom:10px;
+}
+
+audio{
+    width:100%;
+    margin-top:10px;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:80px 20px;
+}
+
+.empty h2{
+    font-size:28px;
+}
+
+.empty p{
+    margin-top:8px;
+    color:var(--muted);
+}
+</style>
 </head>
 
 <body>
-<header>
-<div class="container">
+
 <nav>
-<div class="logo">🎧 Listener Mode</div>
-<a href="/logout" class="btn">Logout</a>
+    <div class="logo">Isai Mini</div>
+
+    <div class="nav-right">
+        <span class="welcome">👋 {{ username }}</span>
+        <a href="/logout" class="nav-btn">Logout</a>
+    </div>
 </nav>
-</div>
-</header>
 
-<div class="container">
-<h2>Your Music</h2>
+<section class="hero">
+    <h1>Welcome back</h1>
+    <p>Stream the music you love</p>
 
-<div class="grid">
-{% for song in songs %}
-<div class="card">
-<h3>{{ song.title }}</h3>
-<p>{{ song.artist_name }}</p>
-<audio controls>
-<source src="/static/{{ song.file_path }}">
-</audio>
-</div>
-{% endfor %}
-</div>
-</div>
+    <form method="get" class="search-bar">
+        <input type="text" name="search" placeholder="Search songs or artists..." value="{{ search_query or '' }}">
+        <button type="submit">Search</button>
+    </form>
+</section>
+
+<section class="section">
+{% if search_query %}
+    {% if songs and songs|length > 0 %}
+        <div class="grid">
+            {% for song in songs %}
+            <div class="song-card">
+                <div class="cover">🎵</div>
+                <h3>{{ song.title }}</h3>
+                <p>{{ song.artist_name }}</p>
+                <audio controls>
+                    <source src="{{ url_for('static', filename=song.file_path) }}">
+                </audio>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty">
+            <h2>No songs found</h2>
+            <p>Try searching something else</p>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty">
+        <h2>Search songs to start listening</h2>
+        <p>Enter a song title or artist above and hit search</p>
+    </div>
+{% endif %}
+</section>
+
 </body>
 </html>

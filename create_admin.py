@@ -1,10 +1,11 @@
+from controller.models import Admin, SessionLocal, create_tables
 from werkzeug.security import generate_password_hash
-from controller.models import Admin, SessionLocal
+
+create_tables()  # ensures tables exist
 
 db = SessionLocal()
 
 admin = db.query(Admin).filter_by(username="admin").first()
-
 if not admin:
     admin = Admin(
         username="admin",
@@ -12,8 +13,8 @@ if not admin:
     )
     db.add(admin)
     db.commit()
-    print("✅ Admin created successfully")
+    print("Admin created")
 else:
-    print("⚠️ Admin already exists")
+    print("Admin already exists")
 
 db.close()

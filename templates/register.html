@@ -1,40 +1,120 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Register • Isai Mini</title>
-<link rel="stylesheet" href="/static/style.css">
-<script>
-function checkPass(){
-    let p=document.getElementById("p").value;
-    let c=document.getElementById("c").value;
-    if(p!==c){
-        alert("Passwords do not match");
-        return false;
-    }
+<meta charset="UTF-8">
+<title>Register | Isai Mini</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI, sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#87ceeb,#b0e0e6);
 }
-</script>
+
+.card{
+    width:420px;
+    background:rgba(255,255,255,.65);
+    backdrop-filter:blur(14px);
+    padding:35px;
+    border-radius:22px;
+    box-shadow:0 25px 45px rgba(0,0,0,.25);
+}
+
+.logo{
+    text-align:center;
+    font-size:34px;
+    font-weight:800;
+    background:linear-gradient(90deg,#1db954,#ff2d55);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    text-align:center;
+    margin:8px 0 30px;
+    color:#444;
+}
+
+input,select{
+    width:100%;
+    padding:14px 18px;
+    border-radius:30px;
+    border:none;
+    outline:none;
+    margin-bottom:18px;
+    font-size:15px;
+    box-shadow:0 6px 15px rgba(0,0,0,.15);
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border-radius:30px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    font-size:16px;
+    background:linear-gradient(90deg,#1db954,#ff2d55);
+}
+
+.links{
+    text-align:center;
+    margin-top:18px;
+    font-size:14px;
+}
+
+.links a{
+    text-decoration:none;
+    color:#000;
+    font-weight:700;
+}
+
+.flash{
+    background:#ffdddd;
+    padding:10px;
+    border-radius:12px;
+    margin-bottom:15px;
+    text-align:center;
+    font-size:14px;
+}
+</style>
 </head>
 
 <body>
-<div class="container" style="max-width:480px;margin-top:60px">
+
 <div class="card">
-<h2>Create Account 🎶</h2>
+    <div class="logo">Isai Mini</div>
+    <div class="subtitle">Create your account</div>
 
-<form method="post" onsubmit="return checkPass()">
-<input name="username" placeholder="Username" required>
-<input name="email_or_phone" placeholder="Email or Phone" required>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash">{{ messages[0] }}</div>
+    {% endif %}
+    {% endwith %}
 
-<input id="p" type="password" name="password" placeholder="Password" required>
-<input id="c" type="password" placeholder="Confirm Password" required>
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="text" name="email_or_phone" placeholder="Email or Phone" required>
+        <input type="password" name="password" placeholder="Password" required>
 
-<select name="role">
-<option value="listener">Listener</option>
-<option value="creator">Creator</option>
-</select>
+        <select name="role" required>
+            <option value="">Select Role</option>
+            <option value="listener">Listener</option>
+            <option value="creator">Creator</option>
+        </select>
 
-<button class="btn" style="margin-top:20px;width:100%">Register</button>
-</form>
+        <button type="submit">Register</button>
+    </form>
+
+    <div class="links">
+        Already have an account? <a href="/login">Login</a>
+    </div>
 </div>
-</div>
+
 </body>
 </html>

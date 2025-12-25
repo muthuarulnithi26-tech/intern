@@ -1,27 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
-<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<style>
+body{
+ font-family:"Segoe UI",sans-serif;
+ background:linear-gradient(to bottom,#87ceeb,#b0e0e6);
+ min-height:100vh;
+}
+.container{
+ max-width:1100px;
+ margin:40px auto;
+}
+.card{
+ background:rgba(255,255,255,.65);
+ backdrop-filter:blur(14px);
+ padding:20px;
+ border-radius:16px;
+ margin-bottom:30px;
+}
+button{
+ padding:6px 14px;
+ border:none;
+ border-radius:14px;
+ background:#ff5f6d;
+ font-weight:700;
+}
+</style>
 </head>
 
 <body>
 <div class="container">
-<h2>Admin Control Panel</h2>
+ <div class="card">
+  <h2>Users</h2>
+  {% for u in users %}
+   <form method="post" action="/admin/delete-user/{{ u.id }}">
+    {{ u.username }}
+    <button>Delete</button>
+   </form>
+  {% endfor %}
+ </div>
 
-<div class="card">
-<h3>Users</h3>
-{% for u in users %}
-<p>{{ u.username }}</p>
-{% endfor %}
-</div>
-
-<div class="card" style="margin-top:30px">
-<h3>Songs</h3>
-{% for s in songs %}
-<p>{{ s.title }} - {{ s.artist_name }}</p>
-{% endfor %}
-</div>
+ <div class="card">
+  <h2>Songs</h2>
+  {% for s in songs %}
+   <form method="post" action="/admin/delete-song/{{ s.id }}">
+    {{ s.title }} - {{ s.artist_name }}
+    <button>Delete</button>
+   </form>
+  {% endfor %}
+ </div>
 </div>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Upload Song</title>
+<title>Edit Song</title>
 <style>
 body{
  font-family:"Segoe UI",sans-serif;
@@ -13,18 +13,16 @@ body{
  align-items:center;
 }
 .card{
- width:380px;
+ width:360px;
  background:rgba(255,255,255,.65);
  backdrop-filter:blur(14px);
  padding:30px;
  border-radius:20px;
- box-shadow:0 20px 40px rgba(0,0,0,.25);
 }
-h2{text-align:center;margin-bottom:20px}
 input{
  width:100%;
  padding:12px;
- margin-bottom:15px;
+ margin-bottom:14px;
  border-radius:12px;
  border:none;
 }
@@ -40,12 +38,11 @@ button{
 </head>
 
 <body>
-<form class="card" method="post" action="/upload-song" enctype="multipart/form-data">
- <h2>Upload Song</h2>
- <input name="title" placeholder="Song Title" required>
- <input name="artist_name" placeholder="Artist Name" required>
- <input type="file" name="song_file" required>
- <button>Upload</button>
+<form class="card" method="post" action="/update-song/{{ song.id }}">
+ <h2>Edit Song</h2>
+ <input name="title" value="{{ song.title }}">
+ <input name="artist_name" value="{{ song.artist_name }}">
+ <button>Update</button>
 </form>
 </body>
 </html>
