@@ -1,51 +1,75 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Upload Song</title>
+<title>Upload Song | Isai Mini</title>
+
 <style>
 body{
- font-family:"Segoe UI",sans-serif;
- background:linear-gradient(to bottom,#87ceeb,#b0e0e6);
- min-height:100vh;
- display:flex;
- justify-content:center;
- align-items:center;
+    font-family:Segoe UI;
+    background:linear-gradient(#87ceeb,#b0e0e6);
 }
-.card{
- width:380px;
- background:rgba(255,255,255,.65);
- backdrop-filter:blur(14px);
- padding:30px;
- border-radius:20px;
- box-shadow:0 20px 40px rgba(0,0,0,.25);
+.form-box{
+    max-width:500px;
+    margin:80px auto;
+    background:rgba(255,255,255,.75);
+    padding:30px;
+    border-radius:20px;
 }
-h2{text-align:center;margin-bottom:20px}
-input{
- width:100%;
- padding:12px;
- margin-bottom:15px;
- border-radius:12px;
- border:none;
+input,select{
+    width:100%;
+    padding:12px;
+    margin-bottom:14px;
+    border-radius:12px;
+    border:1px solid #ccc;
 }
 button{
- width:100%;
- padding:12px;
- border-radius:24px;
- border:none;
- font-weight:700;
- background:linear-gradient(90deg,#1db954,#ff2d55);
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:20px;
+    font-weight:700;
+    background:linear-gradient(90deg,#1db954,#ff2d55);
 }
 </style>
 </head>
 
 <body>
-<form class="card" method="post" action="/upload-song" enctype="multipart/form-data">
- <h2>Upload Song</h2>
- <input name="title" placeholder="Song Title" required>
- <input name="artist_name" placeholder="Artist Name" required>
- <input type="file" name="song_file" required>
- <button>Upload</button>
+
+<div class="form-box">
+<h2>Upload Song</h2>
+
+<form action="/upload-song" method="post" enctype="multipart/form-data">
+
+<input name="title" placeholder="Song Title" required>
+<input name="artist_name" placeholder="Artist Name" required>
+
+<select name="genre" required>
+    <option value="">Select Genre</option>
+    <option>Classical</option>
+    <option>Melody</option>
+    <option>Rock</option>
+    <option>Pop</option>
+</select>
+
+<select name="language" required>
+    <option value="">Select Language</option>
+    <option>Tamil</option>
+    <option>English</option>
+    <option>Hindi</option>
+</select>
+
+<!-- <input name="duration" placeholder="Duration (e.g 3:45)"> -->
+<input name="release_year" placeholder="Release Year">
+
+<input type="file" name="song_file" accept=".mp3" required>
+
+<button type="submit">Upload</button>
+
 </form>
+</div>
+
 </body>
 </html>
+
