@@ -3,220 +3,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Listener Dashboard | Isai Mini</title>
-
+<title>Your Playlists | Isai Mini</title>
 <style>
-:root {
-    --primary: #1db954;
-    --accent: #ff2d55;
-    --bg1: #87ceeb;
-    --bg2: #b0e0e6;
-    --glass: rgba(255,255,255,.65);
-    --text: #111;
-    --muted: #444;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    min-height: 100vh;
-    background: linear-gradient(to bottom, var(--bg1), var(--bg2));
-    color: var(--text);
-}
-
-/* NAV */
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 40px;
-    background: rgba(255,255,255,.35);
-    backdrop-filter: blur(14px);
-}
-
-.logo {
-    font-size: 26px;
-    font-weight: 800;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.nav-links a {
-    margin-left: 18px;
-    font-weight: 600;
-    text-decoration: none;
-    color: #000;
-}
-
-/* MAIN */
-.container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
-
-/* SECTION TITLES */
-.section-title {
-    font-size: 22px;
-    margin: 30px 0 18px;
-}
-
-/* SONG GRID */
-.song-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 22px;
-}
-
-.song-card {
-    background: var(--glass);
-    border-radius: 20px;
-    padding: 18px;
-    transition: .25s;
-}
-
-.song-card:hover {
-    transform: translateY(-6px);
-}
-
-.cover {
-    width: 100%;
-    height: 160px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #ddd, #bbb);
-    margin-bottom: 12px;
-}
-
-.song-title {
-    font-weight: 700;
-}
-
-.song-artist {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 10px;
-}
-
-.audio {
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-/* ACTIONS */
-.actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.fav-btn {
-    text-decoration: none;
-    font-size: 18px;
-}
-
-.play-btn {
-    padding: 6px 14px;
-    border-radius: 14px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    color: #000;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-/* PLAYLIST */
-.playlist-box {
-    margin-top: 40px;
-    background: var(--glass);
-    border-radius: 20px;
-    padding: 20px;
-}
-
-.playlist-box form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.playlist-box input {
-    flex: 1;
-    padding: 10px 14px;
-    border-radius: 14px;
-    border: none;
-}
-
-.playlist-box button {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 14px;
-    background: var(--primary);
-    font-weight: 700;
-}
-
-.playlist-item {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(0,0,0,.1);
-}
-
-.playlist-item a {
-    text-decoration: none;
-    font-weight: 600;
-    color: #000;
-}
+body{margin:0;font-family:Segoe UI, sans-serif;background:linear-gradient(135deg,#87ceeb,#b0e0e6);color:#111;}
+.navbar{display:flex;justify-content:flex-end;gap:30px;padding:20px 40px;font-size:17px;}
+.navbar a{text-decoration:none;font-weight:700;color:#000;}
+.container{width:75%;margin:auto;padding-top:30px;}
+.playlist-card{background:rgba(255,255,255,.55);backdrop-filter:blur(12px);border-radius:16px;padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 25px rgba(0,0,0,.2);}
+.playlist-card button{padding:8px 14px;border:none;border-radius:20px;font-weight:700;cursor:pointer;}
+.edit-btn{background:linear-gradient(90deg,#1db954,#ff2d55);color:#fff;}
+.delete-btn{background:#ddd;color:#111;}
+.create-btn{padding:12px 26px;border-radius:30px;border:none;cursor:pointer;font-weight:700;background:linear-gradient(90deg,#1db954,#ff2d55);color:#fff;margin-bottom:20px;}
 </style>
 </head>
-
 <body>
-
-<nav>
-    <div class="logo">Isai Mini</div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
-</nav>
-
-<div class="container">
-
-    <!-- SONG GRID -->
-    <h2 class="section-title">All Songs</h2>
-    <div class="song-grid">
-        {% for song in songs %}
-        <div class="song-card">
-            <div class="cover"></div>
-            <div class="song-title">{{ song.title }}</div>
-            <div class="song-artist">{{ song.artist_name }}</div>
-            <audio class="audio" controls>
-                <source src="{{ url_for('static', filename=song.file_path) }}">
-            </audio>
-            <div class="actions">
-                <a href="/favorite/{{ song.id }}" class="fav-btn">❤️</a>
-                <a href="/play/{{ song.id }}" class="play-btn">Play</a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- PLAYLIST -->
-    <div class="playlist-box">
-        <h2 class="section-title">My Playlists</h2>
-        <form method="post" action="/create-playlist">
-            <input type="text" name="name" placeholder="New playlist name" required>
-            <button>Create</button>
-        </form>
-        {% for playlist in playlists %}
-        <div class="playlist-item">
-            <a href="/playlist/{{ playlist.id }}">{{ playlist.name }}</a>
-        </div>
-        {% endfor %}
-    </div>
-
+<div class="navbar">
+    <a href="/listener-dashboard">Home</a>
+    <a href="/playlist">Playlist</a>
+    <a href="/favourite">Favourite</a>
+    <a href="/logout">Logout</a>
 </div>
 
+<div class="container">
+    <button class="create-btn" onclick="window.location.href='/create-playlist'">+ Create Playlist</button>
+
+    {% for playlist in playlists %}
+    <div class="playlist-card">
+        <span>▶ {{ playlist.name }}</span>
+        <div>
+            <button class="edit-btn" onclick="window.location.href='/edit-playlist/{{ playlist.id }}'">Edit</button>
+            <form method="POST" action="/delete-playlist/{{ playlist.id }}" style="display:inline;">
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>No playlists yet. Create one!</p>
+    {% endfor %}
+</div>
 </body>
 </html>

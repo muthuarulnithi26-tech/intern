@@ -45,18 +45,6 @@ nav {
     -webkit-text-fill-color: transparent;
 }
 
-.nav-right a {
-    margin-left:12px;
-    padding:8px 18px;
-    border-radius:22px;
-    border:none;
-    cursor:pointer;
-    font-weight:700;
-    background: linear-gradient(90deg,var(--primary),var(--accent));
-    color:#000;
-    text-decoration:none;
-}
-
 /* HERO */
 .hero {
     text-align:center;
@@ -92,18 +80,15 @@ nav {
 
 <nav>
     <div class="logo">Isai Mini</div>
-    <div class="nav-right">
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
-    </div>
+    <!-- Removed nav-right login/register links -->
 </nav>
 
-<section class="hero">
-    <h1>Discover. Stream. Feel every beat.</h1>
-    <p>Welcome to Isai Mini, your personalized music platform. Sign up or log in to start listening!</p>
+<div class="hero">
+    <h1>Welcome to Isai Mini</h1>
+    <p>Discover and enjoy your favorite music. Login or register to access all features.</p>
     <a href="/login" class="hero-btn">Login</a>
     <a href="/register" class="hero-btn">Register</a>
-</section>
+</div>
 
 </body>
 </html>

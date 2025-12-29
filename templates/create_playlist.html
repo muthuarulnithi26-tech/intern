@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Playlist | Isai Mini</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Segoe UI, sans-serif;
+}
+
+body{
+    margin:0;
+    background:linear-gradient(135deg,#87ceeb,#b0e0e6);
+    color:#111;
+}
+
+/* NAVBAR */
+.navbar{
+    display:flex;
+    justify-content:flex-end;
+    gap:30px;
+    padding:20px 40px;
+}
+
+.navbar a{
+    text-decoration:none;
+    font-weight:700;
+    color:#000;
+}
+
+/* CONTAINER */
+.container{
+    width:70%;
+    margin:30px auto;
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(14px);
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+
+/* TITLES */
+h2{ margin-top:0; }
+h3{ margin-top:25px; }
+
+/* SEARCH */
+.search{
+    margin:20px 0;
+    background:rgba(255,255,255,.8);
+    border-radius:30px;
+    padding:12px 20px;
+}
+
+.search input{
+    border:none;
+    outline:none;
+    background:transparent;
+    width:90%;
+    font-size:15px;
+}
+
+/* PLAYLIST NAME */
+.playlist-name{
+    display:block;
+    margin:20px auto;
+    width:300px;
+    padding:12px;
+    text-align:center;
+    background:rgba(255,255,255,.9);
+    border-radius:30px;
+    border:none;
+    font-size:16px;
+}
+
+/* SELECT ALL */
+.select-all{
+    margin-bottom:15px;
+    font-weight:600;
+}
+
+/* SONG ROW */
+.song-row{
+    display:flex;
+    align-items:center;
+    background:rgba(255,255,255,.55);
+    padding:12px 16px;
+    margin-bottom:12px;
+    border-radius:14px;
+    transition:.2s;
+}
+
+.song-row:hover{
+    transform:translateX(4px);
+}
+
+/* ICON */
+.song-img{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1db954,#ff2d55);
+    margin-right:15px;
+}
+
+/* INFO */
+.song-info{
+    flex:1;
+}
+
+.song-title{
+    font-weight:700;
+}
+
+.song-artist{
+    font-size:14px;
+    color:#555;
+}
+
+/* CHECKBOX */
+.add-btn{
+    width:20px;
+    height:20px;
+    cursor:pointer;
+}
+
+/* CREATE BUTTON */
+.create-btn{
+    float:right;
+    margin-top:25px;
+    padding:12px 34px;
+    border:none;
+    border-radius:30px;
+    background:linear-gradient(90deg,#1db954,#ff2d55);
+    color:white;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <a href="/listener-dashboard">Home</a>
+    <a href="/playlist">Playlist</a>
+    <a href="/favourite">Favourite</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="container">
+
+<h2>Create Playlist</h2>
+
+<div class="search">
+    🔍 <input type="text" id="searchInput" placeholder="Search song or artist">
+</div>
+
+<input class="playlist-name"
+       id="playlistName"
+       placeholder="Playlist Name"
+       required>
+
+<h3>Add songs</h3>
+
+<div class="select-all">
+    <input type="checkbox" id="selectAll"> Select All
+</div>
+
+<div id="songList">
+{% for song in songs %}
+<div class="song-row" data-name="{{ song.title }} {{ song.artist_name }}">
+    <div class="song-img"></div>
+
+    <div class="song-info">
+        <div class="song-title">{{ song.title }}</div>
+        <div class="song-artist">{{ song.artist_name }}</div>
+    </div>
+
+    <input type="checkbox"
+           value="{{ song.id }}"
+           class="add-btn song-checkbox">
+</div>
+{% endfor %}
+</div>
+
+<button class="create-btn" onclick="createPlaylist()">
+    Create Playlist
+</button>
+
+</div>
+
+<script>
+/* SELECT ALL */
+document.getElementById("selectAll").addEventListener("change", function(){
+    document.querySelectorAll(".song-checkbox").forEach(cb => {
+        cb.checked = this.checked;
+    });
+});
+
+/* SEARCH */
+document.getElementById("searchInput").addEventListener("keyup", function(){
+    const value = this.value.toLowerCase();
+    document.querySelectorAll(".song-row").forEach(row => {
+        row.style.display =
+            row.dataset.name.toLowerCase().includes(value)
+            ? "flex" : "none";
+    });
+});
+
+/* AJAX CREATE PLAYLIST */
+function createPlaylist(){
+    const name = document.getElementById("playlistName").value.trim();
+    if(!name){
+        alert("Enter playlist name");
+        return;
+    }
+
+    const songs = [];
+    document.querySelectorAll(".song-checkbox:checked")
+        .forEach(cb => songs.push(cb.value));
+
+    fetch("/create-playlist", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+            playlist_name: name,
+            song_ids: songs
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        window.location.href="/playlist";
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Favourite Songs | Isai Mini</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Segoe UI, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(135deg,#87ceeb,#b0e0e6);
+    color: #111;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 30px;
+    padding: 20px 40px;
+    font-size: 17px;
+}
+
+.navbar a {
+    text-decoration: none;
+    font-weight: 700;
+    color: #000;
+}
+
+/* TITLE */
+h2 {
+    text-align: center;
+    margin: 30px 0;
+    font-weight: 800;
+    background: linear-gradient(90deg,#1db954,#ff2d55);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* CONTAINER */
+.container {
+    width: 70%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* SONG CARD */
+.song-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.song-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* PLAY BUTTON */
+.play-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(90deg,#1db954,#ff2d55);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    margin-right: 20px;
+}
+
+/* SONG INFO */
+.song-info {
+    flex: 1;
+}
+
+.song-title {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.song-artist {
+    font-size: 14px;
+    color: #555;
+}
+
+/* HEART ICON */
+.heart {
+    font-size: 20px;
+    color: #ff2d55;
+    margin-left: 15px;
+}
+
+/* AUDIO PLAYER */
+.player {
+    width: 70%;
+    margin: 30px auto;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(14px);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.35);
+}
+audio {
+    width: 100%;
+    outline: none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <a href="/listener-dashboard">Home</a>
+    <a href="/playlist">Playlist</a>
+    <a href="/favourite">Favourite</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<h2>Your Favourite Songs</h2>
+
+<div class="container">
+
+{% if songs %}
+    {% for song in songs %}
+    <div class="song-card" onclick="playSong('{{ url_for('static', filename=song.file_path)|escape }}', {{ song.id }})">
+        <div class="play-btn">▶</div>
+
+        <div class="song-info">
+            <div class="song-title">{{ song.title }}</div>
+            <div class="song-artist">{{ song.artist_name }}</div>
+        </div>
+
+        <div class="heart">❤️</div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="text-align:center;">No favourite songs yet</p>
+{% endif %}
+
+</div>
+
+<div class="player">
+    <audio id="audioPlayer" controls></audio>
+</div>
+
+<script>
+let currentSongId = null;
+
+function playSong(src, songId) {
+    const player = document.getElementById("audioPlayer");
+    player.src = src;
+    player.play();
+    currentSongId = songId;
+}
+</script>
+
+</body>
+</html>
