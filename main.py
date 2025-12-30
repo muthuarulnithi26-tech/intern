@@ -1,10 +1,11 @@
+
 from flask import Flask, render_template, request, redirect, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 
 from controller.models import (
-    User, Song, Favorite, Playlist, PlaylistSong, RecentlyPlayed
+    User, Song, Favorite, Playlist, PlaylistSong, RecentlyPlayed, Role
 )
 from controller.database import SessionLocal, create_tables
 
@@ -32,52 +33,109 @@ def home():
         if session["role"] == "listener":
             return redirect("/listener-dashboard")
     return render_template("home.html")
+# -------------------------------------------------
+# CREATE DEFAULT ROLES
+# -------------------------------------------------
+def create_default_roles():
+    db = SessionLocal()
+    roles = ["admin", "creator", "listener"]
+    for role_name in roles:
+        existing = db.query(Role).filter_by(name=role_name).first()
+        if not existing:
+            db.add(Role(name=role_name))
+    db.commit()
+    db.close()
+
+# Call it after creating tables
+create_default_roles()
+
 
 # -------------------------------------------------
-# AUTH
+# REGISTER
 # -------------------------------------------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         db = SessionLocal()
+
+        role_name = request.form["role"]  # creator / listener
+        role = db.query(Role).filter_by(name=role_name).first()
+
+        if not role:
+            flash("Invalid role selected")
+            db.close()
+            return redirect("/register")
+
         user = User(
             username=request.form["username"],
             email_or_phone=request.form["email_or_phone"],
             password=generate_password_hash(request.form["password"]),
-            role=request.form["role"]
+            role_id=role.id
         )
+
         db.add(user)
         db.commit()
         db.close()
+
         return redirect("/login")
+
     return render_template("register.html")
 
+# -------------------------------------------------
+# LOGIN
+# -------------------------------------------------
 
+# -------------------------------------------------
+# LOGIN
+# -------------------------------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         db = SessionLocal()
+
+        # Fetch user by email or phone
         user = db.query(User).filter_by(
             email_or_phone=request.form["email_or_phone"]
         ).first()
 
         if user and check_password_hash(user.password, request.form["password"]):
-            session["user_id"] = user.id
-            session["username"] = user.username
-            session["role"] = user.role
-            db.close()
-            return redirect("/")
+            # Fetch role object to get role name
+            role_obj = db.query(Role).filter_by(id=user.role_id).first()
+            role_name = role_obj.name if role_obj else None
+
+            if role_name:
+                # Set session values
+                session["user_id"] = user.id
+                session["username"] = user.username
+                session["role"] = role_name  # "admin", "creator", "listener"
+
+                db.close()
+
+                # Redirect based on role
+                if role_name == "admin":
+                    return redirect("/admin-dashboard")
+                elif role_name == "creator":
+                    return redirect("/creator-dashboard")
+                elif role_name == "listener":
+                    return redirect("/listener-dashboard")
+                else:
+                    # fallback
+                    return redirect("/")
+
+        flash("Invalid credentials")
         db.close()
+
     return render_template("login.html")
-
-
+# -------------------------------------------------
+# LOGOUT
+# -------------------------------------------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
 # -------------------------------------------------
-# CREATOR
+# CREATOR DASHBOARD
 # -------------------------------------------------
 @app.route("/creator-dashboard")
 def creator_dashboard():
@@ -85,20 +143,16 @@ def creator_dashboard():
         return redirect("/login")
 
     db = SessionLocal()
-    songs = db.query(Song).filter_by(
-        uploader_id=session["user_id"]
-    ).all()
+    songs = db.query(Song).filter_by(uploader_id=session["user_id"]).all()
     db.close()
 
     return render_template("creator_dashboard.html", songs=songs)
-
 
 @app.route("/upload")
 def upload_page():
     if session.get("role") != "creator":
         return redirect("/login")
     return render_template("upload_song.html")
-
 
 @app.route("/upload-song", methods=["POST"])
 def upload_song():
@@ -111,7 +165,8 @@ def upload_song():
         return redirect("/upload")
 
     filename = secure_filename(file.filename)
-    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(file_path)
 
     db = SessionLocal()
     song = Song(
@@ -123,10 +178,16 @@ def upload_song():
     )
     db.add(song)
     db.commit()
+    db.refresh(song)  # get song.id
+
+    # -----------------------------
+    # Generate lyrics automatically
+    # -----------------------------
+    from generate_lyrics import update_song_lyrics
+    update_song_lyrics(song.id, file_path)
+
     db.close()
-
     return redirect("/creator-dashboard")
-
 
 @app.route("/edit-song/<int:song_id>")
 def edit_song_page(song_id):
@@ -144,7 +205,6 @@ def edit_song_page(song_id):
         return redirect("/creator-dashboard")
 
     return render_template("edit_song.html", song=song)
-
 
 @app.route("/update-song/<int:song_id>", methods=["POST"])
 def update_song(song_id):
@@ -166,8 +226,7 @@ def update_song(song_id):
     db.close()
     return redirect("/creator-dashboard")
 
-
-@app.route("/delete-song/<int:song_id>")
+@app.route("/delete-song/<int:song_id>", methods=["POST"])
 def delete_song(song_id):
     if session.get("role") != "creator":
         return redirect("/login")
@@ -184,7 +243,9 @@ def delete_song(song_id):
         db.commit()
 
     db.close()
-    return redirect("/creator_dashboard")
+    return redirect("/creator-dashboard")
+
+
 # -------------------------------------------------
 # LISTENER DASHBOARD
 # -------------------------------------------------
@@ -194,20 +255,11 @@ def listener_dashboard():
         return redirect("/login")
 
     db = SessionLocal()
-
     songs = db.query(Song).all()
-    playlists = db.query(Playlist).filter_by(
-        user_id=session["user_id"]
-    ).all()
-
+    playlists = db.query(Playlist).filter_by(user_id=session["user_id"]).all()
     db.close()
 
-    return render_template(
-        "listener_dashboard.html",
-        songs=songs,
-        playlists=playlists
-    )
-
+    return render_template("listener_dashboard.html", songs=songs, playlists=playlists)
 # -------------------------------------------------
 # LOG RECENTLY PLAYED (AJAX)
 # -------------------------------------------------
@@ -217,27 +269,19 @@ def log_play(song_id):
         return jsonify({"error": "unauthorized"}), 403
 
     db = SessionLocal()
-
-    old = db.query(RecentlyPlayed).filter_by(
-        user_id=session["user_id"],
-        song_id=song_id
-    ).first()
+    old = db.query(RecentlyPlayed).filter_by(user_id=session["user_id"], song_id=song_id).first()
 
     if old:
         db.delete(old)
 
-    db.add(RecentlyPlayed(
-        user_id=session["user_id"],
-        song_id=song_id
-    ))
-
+    db.add(RecentlyPlayed(user_id=session["user_id"], song_id=song_id))
     db.commit()
     db.close()
 
     return jsonify({"status": "ok"})
 
 # -------------------------------------------------
-# LIKE / FAVOURITE SONG (AJAX)
+# LIKE / FAVORITE SONG (AJAX)
 # -------------------------------------------------
 @app.route("/like-song/<int:song_id>", methods=["POST"])
 def like_song(song_id):
@@ -245,21 +289,27 @@ def like_song(song_id):
         return jsonify({"error": "login required"}), 401
 
     db = SessionLocal()
-
-    exists = db.query(Favorite).filter_by(
-        user_id=session["user_id"],
-        song_id=song_id
-    ).first()
+    exists = db.query(Favorite).filter_by(user_id=session["user_id"], song_id=song_id).first()
 
     if not exists:
-        db.add(Favorite(
-            user_id=session["user_id"],
-            song_id=song_id
-        ))
+        db.add(Favorite(user_id=session["user_id"], song_id=song_id))
         db.commit()
 
     db.close()
     return jsonify({"status": "liked"})
+
+@app.route("/unlike-song/<int:song_id>", methods=["POST"])
+def unlike_song(song_id):
+    if session.get("role") != "listener":
+        return jsonify({"error": "login required"}), 401
+
+    db = SessionLocal()
+    fav = db.query(Favorite).filter_by(user_id=session["user_id"], song_id=song_id).first()
+    if fav:
+        db.delete(fav)
+        db.commit()
+    db.close()
+    return jsonify({"status": "unliked"})
 
 # -------------------------------------------------
 # FAVOURITE PAGE
@@ -270,14 +320,12 @@ def favourite():
         return redirect("/login")
 
     db = SessionLocal()
-
     songs = (
         db.query(Song)
         .join(Favorite, Favorite.song_id == Song.id)
         .filter(Favorite.user_id == session["user_id"])
         .all()
     )
-
     db.close()
     return render_template("favourite.html", songs=songs)
 
@@ -291,49 +339,33 @@ def create_playlist():
 
     db = SessionLocal()
 
-    # -------- AJAX REQUEST --------
     if request.is_json:
         data = request.get_json()
-
-        playlist = Playlist(
-            name=data["playlist_name"],
-            user_id=session["user_id"]
-        )
+        playlist = Playlist(name=data["playlist_name"], user_id=session["user_id"])
         db.add(playlist)
         db.commit()
         db.refresh(playlist)
 
         for sid in data["song_ids"]:
-            db.add(PlaylistSong(
-                playlist_id=playlist.id,
-                song_id=int(sid)
-            ))
+            db.add(PlaylistSong(playlist_id=playlist.id, song_id=int(sid)))
 
         db.commit()
         db.close()
         return jsonify({"message": "Playlist created successfully"})
 
-    # -------- NORMAL FORM POST --------
     if request.method == "POST":
-        playlist = Playlist(
-            name=request.form["playlist_name"],
-            user_id=session["user_id"]
-        )
+        playlist = Playlist(name=request.form["playlist_name"], user_id=session["user_id"])
         db.add(playlist)
         db.commit()
         db.refresh(playlist)
 
         for sid in request.form.getlist("song_ids"):
-            db.add(PlaylistSong(
-                playlist_id=playlist.id,
-                song_id=int(sid)
-            ))
+            db.add(PlaylistSong(playlist_id=playlist.id, song_id=int(sid)))
 
         db.commit()
         db.close()
         return redirect("/listener-dashboard")
 
-    # -------- GET PAGE --------
     songs = db.query(Song).all()
     db.close()
     return render_template("create_playlist.html", songs=songs)
@@ -347,26 +379,16 @@ def playlist_songs(playlist_id):
         return jsonify({"songs": []})
 
     db = SessionLocal()
+    rows = db.query(Song).join(PlaylistSong, PlaylistSong.song_id == Song.id).filter(
+        PlaylistSong.playlist_id == playlist_id
+    ).all()
 
-    rows = (
-        db.query(Song)
-        .join(PlaylistSong, PlaylistSong.song_id == Song.id)
-        .filter(PlaylistSong.playlist_id == playlist_id)
-        .all()
-    )
-
-    songs = []
-    for song in rows:
-        songs.append({
-            "id": song.id,
-            "title": song.title,
-            "file": "/static/" + song.file_path
-        })
-
+    songs = [{"id": s.id, "title": s.title, "file": "/static/" + s.file_path} for s in rows]
     db.close()
     return jsonify({"songs": songs})
+
 # -------------------------------------------------
-# VIEW ALL PLAYLISTS
+# VIEW PLAYLISTS
 # -------------------------------------------------
 @app.route("/playlist")
 def view_playlists():
@@ -389,7 +411,6 @@ def delete_playlist(playlist_id):
     db = SessionLocal()
     playlist = db.query(Playlist).filter_by(id=playlist_id, user_id=session["user_id"]).first()
     if playlist:
-        # Delete all playlist songs first
         db.query(PlaylistSong).filter_by(playlist_id=playlist.id).delete()
         db.delete(playlist)
         db.commit()
@@ -421,10 +442,10 @@ def edit_playlist(playlist_id):
         db.close()
         return redirect("/playlist")
 
-    # Get existing song IDs
     existing_song_ids = [ps.song_id for ps in db.query(PlaylistSong).filter_by(playlist_id=playlist.id).all()]
     db.close()
     return render_template("edit_playlist.html", playlist=playlist, songs=songs, existing_song_ids=existing_song_ids)
+
 # -------------------------------------------------
 # SEARCH SONGS (AJAX)
 # -------------------------------------------------
@@ -448,7 +469,71 @@ def search_songs():
     return jsonify({"songs": songs})
 
 # -------------------------------------------------
+# ADMIN DASHBOARD
+# -------------------------------------------------
+from sqlalchemy.orm import joinedload
+@app.route("/admin-dashboard")
+def admin_dashboard():
+    if session.get("role") != "admin":
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    # Eager-load role to avoid DetachedInstanceError
+    users = db.query(User).options(joinedload(User.role)).all()
+    songs = db.query(Song).all()
+    total_users = len(users)
+    total_songs = len(songs)
+    total_playlists = db.query(Playlist).count()
+
+    db.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        total_users=total_users,
+        total_songs=total_songs,
+        total_playlists=total_playlists,
+        users=users,
+        songs=songs
+    )
+
+# -------------------------------------------------
+# DELETE USER (ADMIN)
+# -------------------------------------------------
+@app.route("/admin/delete-user/<int:user_id>")
+def admin_delete_user(user_id):
+    if session.get("role") != "admin":
+        return redirect("/login")
+
+    db = SessionLocal()
+    user = db.query(User).get(user_id)
+    if user and user.role != "admin":
+        db.delete(user)
+        db.commit()
+    db.close()
+    return redirect("/admin-dashboard")
+
+# -------------------------------------------------
+# DELETE SONG (ADMIN)
+# -------------------------------------------------
+@app.route("/admin/delete-song/<int:song_id>")
+def admin_delete_song(song_id):
+    if session.get("role") != "admin":
+        return redirect("/login")
+
+    db = SessionLocal()
+    song = db.query(Song).get(song_id)
+    if song:
+        try:
+            os.remove(os.path.join("static", song.file_path))
+        except:
+            pass
+        db.delete(song)
+        db.commit()
+    db.close()
+    return redirect("/admin-dashboard")
+# -------------------------------------------------
 # RUN APP
 # -------------------------------------------------
-if __name__ == "__main__":
+if __name__ == "__main__":   
     app.run(debug=True)
