@@ -1,0 +1,8 @@
+{
+  "command": "gunicorn -w 2 -b 0.0.0.0:9000 main:app",
+  "build_path": ".",
+  "stack": "python_3_11",
+  "memory": 256,
+  "env_variables": {},
+  "scripts": {}
+}

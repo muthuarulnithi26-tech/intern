@@ -6,65 +6,141 @@
 <title>Favourite Songs | Isai Mini</title>
 
 <style>
-body{
-    margin:0;
+*{
+    box-sizing:border-box;
     font-family:Segoe UI,sans-serif;
-    background:linear-gradient(135deg,#87ceeb,#b0e0e6);
 }
 
+body{
+    margin:0;
+    background:linear-gradient(135deg,#87ceeb,#b0e0e6);
+    color:#111;
+}
+
+/* ---------------- NAVBAR ---------------- */
 .navbar{
     display:flex;
     justify-content:flex-end;
-    gap:25px;
+    gap:30px;
+    padding:20px 40px;
+    font-size:17px;
+}
+
+.navbar a{
+    text-decoration:none;
+    font-weight:700;
+    color:#000;
+}
+
+/* ---------------- PAGE WRAPPER ---------------- */
+.container{
+    width:100%;
     padding:20px 40px;
 }
 
+/* ---------------- TITLE ---------------- */
+.page-title{
+    font-size:26px;
+    font-weight:800;
+    margin-bottom:25px;
+    background:linear-gradient(90deg,#1db954,#ff2d55);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* ---------------- SONG CARD ---------------- */
 .song{
     width:70%;
     margin:15px auto;
-    padding:15px 20px;
-    background:rgba(255,255,255,.6);
-    border-radius:16px;
+    padding:18px 22px;
+    background:rgba(255,255,255,.55);
+    backdrop-filter:blur(12px);
+    border-radius:18px;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    box-shadow:0 15px 30px rgba(0,0,0,.2);
+    transition:.3s;
 }
 
+.song:hover{
+    transform:translateY(-4px);
+    background:rgba(255,255,255,.75);
+}
+
+/* ---------------- SONG INFO ---------------- */
 .song-info{
     cursor:pointer;
 }
 
+.song-info b{
+    font-size:16px;
+}
+
+.song-info small{
+    color:#333;
+}
+
+/* ---------------- HEART ---------------- */
 .heart{
     font-size:22px;
     cursor:pointer;
+    transition:.3s;
+}
+
+.heart:hover{
+    transform:scale(1.2);
+}
+
+/* ---------------- AUDIO PLAYER ---------------- */
+#audio-wrapper{
+    width:70%;
+    margin:25px auto;
+    padding:15px 20px;
+    background:rgba(0,0,0,.35);
+    backdrop-filter:blur(14px);
+    border-radius:20px;
+    box-shadow:0 25px 45px rgba(0,0,0,.35);
+}
+
+audio{
+    width:100%;
 }
 </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <div class="navbar">
     <a href="/listener-dashboard">Home</a>
     <a href="/playlist">Playlist</a>
     <a href="/logout">Logout</a>
 </div>
 
-{% for song in songs %}
-<div class="song">
-    <div class="song-info"
-         onclick="play('{{ url_for('static', filename=song.file_path) }}')">
-        <b>{{ song.title }}</b><br>
-        <small>{{ song.artist_name }}</small>
+<div class="container">
+    <div class="page-title">Your Favourite Songs ❤️</div>
+
+    {% for song in songs %}
+    <div class="song">
+        <div class="song-info"
+             onclick="play('{{ url_for('static', filename=song.file_path) }}')">
+            <b>{{ song.title }}</b><br>
+            <small>{{ song.artist_name }}</small>
+        </div>
+
+        <div class="heart"
+             onclick="unlike({{ song.id }}, this)">
+            ❤️
+        </div>
     </div>
-   <div class="heart {% if song.id in favorite_ids %}liked{% endif %}" 
-     onclick="toggleLike({{ song.id }}, this)">
-    ❤️
+    {% endfor %}
 </div>
 
+<!-- PLAYER -->
+<div id="audio-wrapper">
+    <audio id="player" controls></audio>
 </div>
-{% endfor %}
-
-<audio id="player" controls style="width:70%;margin:20px auto;display:block;"></audio>
 
 <script>
 function play(src){
@@ -75,7 +151,7 @@ function play(src){
 
 function unlike(songId, el){
     fetch(`/unlike-song/${songId}`, {method:"POST"})
-        .then(()=>el.closest(".song").remove());
+        .then(() => el.closest(".song").remove());
 }
 </script>
 

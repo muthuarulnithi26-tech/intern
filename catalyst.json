@@ -1,0 +1,12 @@
+{
+  "appsail": [
+    {
+      "source": ".",
+      "name": "flask-test"
+    },
+    {
+      "source": ".",
+      "name": "testing"
+    }
+  ]
+}

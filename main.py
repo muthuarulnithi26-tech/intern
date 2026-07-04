@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, session, flash, jso
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
+import subprocess
 
 from controller.models import (
     User, Song, Favorite, Playlist, PlaylistSong, RecentlyPlayed, Role
@@ -21,6 +22,79 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 create_tables()
+
+# ---------------------- ADMIN SETUP ----------------------
+db = SessionLocal()
+
+# Ensure admin role exists
+admin_role = db.query(Role).filter_by(name="admin").first()
+if not admin_role:
+    admin_role = Role(name="admin")
+    db.add(admin_role)
+    db.commit()
+    db.refresh(admin_role)
+
+# Ensure admin user exists
+existing_admin = db.query(User).filter_by(username="admin").first()
+if not existing_admin:
+    admin_user = User(
+        username="admin",
+        email_or_phone="admin@gmail.com",
+        password=generate_password_hash("admin123"),
+        role_id=admin_role.id
+    )
+    db.add(admin_user)
+    db.commit()
+    print("✅ Admin created successfully")
+else:
+    print("ℹ️ Admin already exists")
+db.close()
+
+# # ---------------------- LYRICS GENERATION ----------------------
+# from pydub import AudioSegment
+# import speech_recognition as sr
+
+# def convert_to_wav(input_file):
+#     filename, ext = os.path.splitext(input_file)
+#     if ext.lower() != ".wav":
+#         wav_file = f"{filename}.wav"
+#         audio = AudioSegment.from_file(input_file)
+#         audio.export(wav_file, format="wav")
+#         return wav_file
+#     return input_file
+
+# def transcribe_audio(audio_path):
+#     recognizer = sr.Recognizer()
+#     with sr.AudioFile(audio_path) as source:
+#         audio_data = recognizer.record(source)
+#     try:
+#         return recognizer.recognize_google(audio_data)
+#     except:
+#         return ""
+
+# def generate_lyrics_from_text(raw_text):
+#     if not raw_text.strip():
+#         return "Lyrics could not be generated."
+#     prompt = f"Convert the following spoken text into song lyrics:\n{raw_text}"
+#     command = ["ollama", "run", "mistral:latest", "--prompt", prompt]
+#     result = subprocess.run(command, capture_output=True, text=True)
+#     if result.returncode != 0:
+#         return "Lyrics generation failed."
+#     return result.stdout.strip()
+
+# def update_song_lyrics(song_id, audio_path):
+#     db = SessionLocal()
+#     wav_path = convert_to_wav(audio_path)
+#     raw_text = transcribe_audio(wav_path)
+#     lyrics = generate_lyrics_from_text(raw_text)
+
+#     song = db.query(Song).filter_by(id=song_id).first()
+#     if song:
+#         song.lyrics = lyrics
+#         db.commit()
+#         print(f"Lyrics updated for: {song.title}")
+#     db.close()
+
 
 # -------------------------------------------------
 # HOME
@@ -80,12 +154,7 @@ def register():
         return redirect("/login")
 
     return render_template("register.html")
-
-# -------------------------------------------------
-# LOGIN
-# -------------------------------------------------
-
-# -------------------------------------------------
+# ---------------------------------
 # LOGIN
 # -------------------------------------------------
 @app.route("/login", methods=["GET", "POST"])
@@ -153,7 +222,6 @@ def upload_page():
     if session.get("role") != "creator":
         return redirect("/login")
     return render_template("upload_song.html")
-
 @app.route("/upload-song", methods=["POST"])
 def upload_song():
     if session.get("role") != "creator":
@@ -178,16 +246,19 @@ def upload_song():
     )
     db.add(song)
     db.commit()
-    db.refresh(song)  # get song.id
+    db.refresh(song)
 
-    # -----------------------------
-    # Generate lyrics automatically
-    # -----------------------------
-    from generate_lyrics import update_song_lyrics
-    update_song_lyrics(song.id, file_path)
+    db.close()                       # ✅ CLOSE SESSION
+    return redirect("/creator-dashboard")  # ✅ RETURN RESPONSE
 
-    db.close()
-    return redirect("/creator-dashboard")
+    # # -----------------------------
+    # # Generate lyrics automatically
+    # # -----------------------------
+    # from generate_lyrics import update_song_lyrics
+    # update_song_lyrics(song.id, file_path)
+
+    # db.close()
+    # return redirect("/creator-dashboard")
 
 @app.route("/edit-song/<int:song_id>")
 def edit_song_page(song_id):

@@ -1,0 +1,26 @@
+[debug] [2026-07-04T07:55:43.950Z] : 
+[debug] [2026-07-04T07:55:43.951Z] : ----------------------------------------------------------------------
+[debug] [2026-07-04T07:55:43.952Z] : Command:      C:\Program Files\nodejs\node.exe C:\Users\mvinn\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\bin\catalyst.js deploy
+[debug] [2026-07-04T07:55:43.952Z] : CLI Version:  1.26.2
+[debug] [2026-07-04T07:55:43.952Z] : Platform:     win32
+[debug] [2026-07-04T07:55:43.952Z] : Node Version: v24.16.0
+[debug] [2026-07-04T07:55:43.952Z] : Time:         Sat Jul 04 2026 13:25:43 GMT+0530 (India Standard Time)
+[debug] [2026-07-04T07:55:43.952Z] : ----------------------------------------------------------------------
+[debug] [2026-07-04T07:55:43.952Z] : 
+[debug] [2026-07-04T07:55:44.490Z] : > authorizing via signed-in user option
+[debug] [2026-07-04T07:55:44.490Z] : > command requires scopes: ["ZohoCatalyst.projects.ALL","ZohoCatalyst.functions.ALL","ZohoCatalyst.webapp.ALL","ZohoCatalyst.appsail.Update"]
+[debug] [2026-07-04T07:55:44.507Z] : >>>> HTTP REQUEST : GET https://api.catalyst.zoho.in/baas/v1/project/43494000000013024 
+
+[debug] [2026-07-04T07:55:44.810Z] : <<<< HTTP RESPONSE : 200
+Response Headers: {"server":"ZGS","date":"Sat, 04 Jul 2026 07:55:45 GMT","content-type":"application/vnd.catalyst.v2+json","transfer-encoding":"chunked","connection":"keep-alive","x-content-type-options":"nosniff","cache-control":"private,no-cache,no-store,max-age=0,must-revalidate","pragma":"no-cache","expires":"Thu, 01 Jan 1970 00:00:00 GMT","x-frame-options":"DENY","strict-transport-security":"max-age=64072000; includeSubDomains; preload"}
+
+[debug] [2026-07-04T07:55:44.814Z] : >>>> HTTP REQUEST : GET https://api.catalyst.zoho.in/baas/v1/project/43494000000013024/environment 
+
+[debug] [2026-07-04T07:55:44.871Z] : <<<< HTTP RESPONSE : 200
+Response Headers: {"server":"ZGS","date":"Sat, 04 Jul 2026 07:55:45 GMT","content-type":"application/vnd.catalyst.v2+json","transfer-encoding":"chunked","connection":"keep-alive","x-content-type-options":"nosniff","cache-control":"private,no-cache,no-store,max-age=0,must-revalidate","pragma":"no-cache","expires":"Thu, 01 Jan 1970 00:00:00 GMT","x-frame-options":"DENY","strict-transport-security":"max-age=64072000; includeSubDomains; preload"}
+
+[debug] [2026-07-04T07:59:24.866Z] : >>>> HTTP REQUEST : PUT https://api.catalyst.zoho.in/baas/v1/project/43494000000013024/appsail/upsert 
+
+[debug] [2026-07-04T07:59:52.597Z] : <<<< HTTP RESPONSE : 200
+Response Headers: {"server":"ZGS","date":"Sat, 04 Jul 2026 07:59:53 GMT","content-type":"application/vnd.catalyst.v2+json","transfer-encoding":"chunked","connection":"keep-alive","x-content-type-options":"nosniff","cache-control":"private,no-cache,no-store,max-age=0,must-revalidate","pragma":"no-cache","expires":"Thu, 01 Jan 1970 00:00:00 GMT","x-frame-options":"DENY","strict-transport-security":"max-age=64072000; includeSubDomains; preload"}
+
